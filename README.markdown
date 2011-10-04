@@ -47,4 +47,19 @@ Creating a file does require you to set the content type of the file upload:
     
     h(b / "testing.txt" <<< (testFile, "plain/text") <@(access_key.get, secret_key.get) >|)
 
+
+## Testing
+
+To test the module, you'll need to set two system properties:
+
+* awsAccessKey
+* awsSecretAccessKey
+
+When using sbt 0.11, you can do the following:
+
+    eval System.setProperty("awsAccessKey", "XXXXXXXXX")
+    eval System.setProperty("awsSecretAccessKey", "XXXXXXXXX")
+
+After that, you can just run `test` and all of the tests should pass.
+
 [1]: http://docs.amazonwebservices.com/AmazonS3/index.html?RESTAuthentication.html
