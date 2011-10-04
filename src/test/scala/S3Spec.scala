@@ -7,7 +7,6 @@ import java.io.{File,FileWriter}
 object S3Spec extends Specification {
 
   val UTF_8 = "UTF-8"
-  val h = new Http
   val test = Bucket("databinder-dispatch-s3-test-bucket")
   val access_key = getValue("awsAccessKey")
   val secret_key = getValue("awsSecretAccessKey")
@@ -18,7 +17,7 @@ object S3Spec extends Specification {
     "be able to create a bucket" in {
       shouldWeSkip_?
       val resp = test.create <@ (access_key.get, secret_key.get)
-      h x (resp as_str) {
+      Http x (resp as_str) {
         case (code, _, _, _) => code must be_==(200)
       }
     }
@@ -29,9 +28,9 @@ object S3Spec extends Specification {
       val writer = new FileWriter(testFile)
       writer.write("testing")
       writer.close
-      
+
       val r = test / "testing.txt" <<< (testFile, "plain/text") <@ (access_key.get, secret_key.get)
-      h x (r as_str){
+      Http x (r as_str){
         case (code, _, _, _) => {
           code must be_==(200)
         }
@@ -39,7 +38,7 @@ object S3Spec extends Specification {
     }
     "be able to retrieve a file" in {
       shouldWeSkip_?
-      h x(test / "testing.txt" <@ (access_key.get, secret_key.get) as_str) {
+      Http x(test / "testing.txt" <@ (access_key.get, secret_key.get) as_str) {
         case (code, _, _, str) => {
           code must be_==(200)
           str() must be_==("testing")
@@ -48,16 +47,20 @@ object S3Spec extends Specification {
     }
     "be able to delete a file" in {
       shouldWeSkip_?
-      h x (test.DELETE / "testing.txt" <@ (access_key.get, secret_key.get) >|) {
+      Http x (test.DELETE / "testing.txt" <@ (access_key.get, secret_key.get) >|) {
         case (code, _, _, _) => code must be_==(204)
       }
     }
     "be able to delete a bucket" in {
       shouldWeSkip_?
-      h x (test.DELETE <@ (access_key.get, secret_key.get) >| ) {
+      Http x (test.DELETE <@ (access_key.get, secret_key.get) >| ) {
         case (code, _, _, _) => code must be_==(204)
       }
     }
+  }
+
+  doAfterSpec {
+    Http.shutdown()
   }
 
   def getValue(key: String): Option[String] = {
