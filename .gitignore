@@ -1,2 +1,5 @@
 target/
 boot/
+.DS_Store
+.idea
+.idea_modules
