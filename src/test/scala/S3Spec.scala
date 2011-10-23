@@ -13,6 +13,14 @@ object S3Spec extends Specification {
 
   def shouldWeSkip_? = List(access_key, secret_key) must notContain(None).orSkip
 
+  def newTempFile = {
+    val testFile = File.createTempFile("s3specs","bin")
+    val writer = new FileWriter(testFile)
+    writer.write("testing")
+    writer.close
+    testFile
+  }
+
   "S3" should {
     "be able to create a bucket" in {
       shouldWeSkip_?
@@ -24,16 +32,22 @@ object S3Spec extends Specification {
     "be able to create a file" in {
       shouldWeSkip_?
 
-      val testFile = File.createTempFile("s3specs","bin")
-      val writer = new FileWriter(testFile)
-      writer.write("testing")
-      writer.close
+      val testFile = newTempFile
 
       val r = test / "testing.txt" <<< (testFile, "plain/text") <@ (access_key.get, secret_key.get)
       Http x (r as_str){
         case (code, _, _, _) => {
           code must be_==(200)
         }
+      }
+    }
+    "be able to send x-amz headers" in {
+      shouldWeSkip_?
+      val testFile = newTempFile
+      val headers = Map("x-amz-meta-author" -> "john@doe.com")
+      val r = test / "testing.txt" <<< (testFile, "plain/text") <:< headers <@ (access_key.get, secret_key.get)
+      Http x (r as_str) {
+        case (code, _, _, _) => code must be_== (200)
       }
     }
     "be able to retrieve a file" in {

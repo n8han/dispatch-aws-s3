@@ -68,7 +68,7 @@ object S3 {
       val amzHeaders = req.headers.filter {
         case (name, _) => name.toLowerCase.startsWith("x-amz")
       }.foldLeft(Map.empty[String, Set[String]]) { case (m, (name, value)) => 
-        m + (name -> (m(name) + value))
+        m + (name -> (m.getOrElse(name, Set.empty[String]) + value))
       }
       val d = new Date
       req <:< Map("Authorization" -> "AWS %s:%s".format(accessKey, sign(req.method, path, secretKey, d, contentType, contentMd5, amzHeaders)),
