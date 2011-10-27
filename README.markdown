@@ -3,7 +3,10 @@ Amazon S3 module
 
 The `aws-s3` module provides basic support for interacting with Amazon's
 S3 service by providing additional handlers which sign the HTTP
-request in accordance with the [S3 authentication specifications][1].  
+request in accordance with the [S3 authentication specifications][1].
+It's possible both to sign requests for Authorization Header 
+Authentication and to generate signed request URIs that can be handed
+out to third parties for Query String Authentication.
 The module also provides a convenience class for interacting with S3
 Buckets. 
 
@@ -46,6 +49,12 @@ Creating a file does require you to set the content type of the file upload:
     val testFile = new File("testing.txt")
     
     h(b / "testing.txt" <<< (testFile, "plain/text") <@(access_key.get, secret_key.get) >|)
+    
+Generation of a signed URI for a GET request with query string authentication
+works as follows:
+
+    val expires = System.currentTimeMillis() / 1000 + 30 * 60
+    (Bucket("my-test-bucket") / "testing.txt").signed(access_key.get, secret_key.get, expires).to_uri
 
 
 ## Testing
@@ -62,4 +71,4 @@ When using sbt 0.11, you can do the following:
 
 After that, you can just run `test` and all of the tests should pass.
 
-[1]: http://docs.amazonwebservices.com/AmazonS3/index.html?RESTAuthentication.html
+[1]: http://docs.amazonwebservices.com/AmazonS3/latest/dev/index.html?RESTAuthentication.html
